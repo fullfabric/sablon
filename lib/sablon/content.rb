@@ -50,7 +50,8 @@ module Sablon
       end
 
       def initialize(path)
-        super "#{Integer(rand * 1e9)}-#{File.basename(path)}", IO.binread(path)
+        # Links from Amazon S3 might have ?1498548740 part
+        super "#{Integer(rand * 1e9)}-#{File.basename(path).split('?').first}", open(path).read
       end
 
       def append_to(paragraph, display_node, env) end

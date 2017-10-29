@@ -1,7 +1,10 @@
 require 'zip'
 require 'nokogiri'
+require 'open-uri'
 
 require "sablon/version"
+require "sablon/configuration/configuration"
+
 require "sablon/numbering"
 require "sablon/images"
 require "sablon/context"
@@ -20,6 +23,10 @@ require "sablon/content"
 module Sablon
   class TemplateError < ArgumentError; end
   class ContextError < ArgumentError; end
+
+  def self.configure
+    yield(Configuration.instance) if block_given?
+  end
 
   def self.template(path)
     Template.new(path)

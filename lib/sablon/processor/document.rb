@@ -118,8 +118,8 @@ module Sablon
       end
 
       class ImageBlock < ParagraphBlock
-        def self.parent(node)
-          node.ancestors
+        def self.placeholder(node)
+          parent(node).xpath('following-sibling::w:p')
         end
 
         def self.encloses?(start_field, end_field)
@@ -133,9 +133,9 @@ module Sablon
             return
           end
 
-          pic_prop = self.class.parent(start_field).at_xpath('.//pic:cNvPr', pic: Sablon::Processor::Relationships::PICTURE_NS_URI)
+          pic_prop = self.class.placeholder(start_field).at_xpath('.//pic:cNvPr', pic: Sablon::Processor::Relationships::PICTURE_NS_URI)
           pic_prop.attributes['name'].value = content.first.name
-          blip = self.class.parent(start_field).at_xpath('.//a:blip', a: Sablon::Processor::Relationships::MAIN_NS_URI)
+          blip = self.class.placeholder(start_field).at_xpath('.//a:blip', a: Sablon::Processor::Relationships::MAIN_NS_URI)
           blip.attributes['embed'].value = content.first.rid
           start_field.remove
           end_field.remove
@@ -196,7 +196,7 @@ module Sablon
           when /([^ ]+):if/
             block = consume_block("#{$1}:endIf")
             Statement::Condition.new(Expression.parse($1), block)
-          when /comment/
+          when /^comment$/
             block = consume_block("endComment")
             Statement::Comment.new(block)
           when /^@([^ ]+):start/
