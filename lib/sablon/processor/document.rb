@@ -69,7 +69,7 @@ module Sablon
         end
 
         def remove_control_elements
-          body.each &:remove
+          body.each(&:remove)
           start_node.remove
           end_node.remove
         end
@@ -150,7 +150,7 @@ module Sablon
         end
 
         def remove_control_elements
-          body.each &:remove
+          body.each(&:remove)
           start_field.remove
           end_field.remove
         end

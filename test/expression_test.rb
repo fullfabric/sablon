@@ -55,8 +55,8 @@ class LookupOrMethodCallTest < Sablon::TestCase
   def test_missing_receiver
     user = OpenStruct.new(first_name: "Jack")
     expr = Sablon::Expression.parse("user.address.line_1")
-    assert_equal nil, expr.evaluate("user" => user)
-    assert_equal nil, expr.evaluate({})
+    assert_nil expr.evaluate("user" => user)
+    assert_nil expr.evaluate({})
   end
 
   def test_missing_collection_receiver
