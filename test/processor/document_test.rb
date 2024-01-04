@@ -440,6 +440,11 @@ class ProcessorDocumentTest < Sablon::TestCase
     assert_equal "Before After", text(result)
   end
 
+  def test_loop_with_conditional_predicate
+    result = process(snippet("paragraph_loop_with_conditional_predicate"), { "technologies" => ["Ruby", "Rails"] })
+    assert_equal "Ruby Rails", text(result)
+  end
+
   private
 
   def process(document, context)
