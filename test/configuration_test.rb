@@ -75,8 +75,9 @@ class ConfigurationHTMLTagTest < Sablon::TestCase
 
   # Exercising more of the logic used to conform args into valid
   def test_html_tag_full_init
-    args = ['a', 'inline', ast_class: Sablon::HTMLConverter::Run]
-    tag = Sablon::Configuration::HTMLTag.new(*args)
+    args = ['a', 'inline']
+    kwargs = { ast_class: Sablon::HTMLConverter::Run }
+    tag = Sablon::Configuration::HTMLTag.new(*args, **kwargs)
     assert_equal :a, tag.name
     assert_equal :inline, tag.type
     assert_equal Sablon::HTMLConverter::Run, tag.ast_class
@@ -112,7 +113,7 @@ class ConfigurationHTMLTagTest < Sablon::TestCase
 
     # test default allowances
     assert div.allowed_child?(text) # all inline elements allowed
-    assert div.allowed_child?(olist) # tag name is included even though it is bock leve
+    assert div.allowed_child?(olist) # tag name is included even though it is block level
     assert_equal false, div.allowed_child?(div) # other block elms are not allowed
 
     # test olist with allowances for all blocks but no inline
