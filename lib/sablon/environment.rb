@@ -14,7 +14,7 @@ module Sablon
 
     # reader method for the DOM::Model instance stored on the template
     def document
-      @template.document
+      @template&.document
     end
 
     def section_properties=(properties)

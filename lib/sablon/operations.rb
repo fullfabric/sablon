@@ -22,14 +22,15 @@ module Sablon
           iter_env = env.alter_context(iterator_name => item)
           block.process(iter_env)
         end
-        update_unique_ids(env, content)
-        block.replace(content.reverse)
+        update_unique_ids(env, content) 
+        block.replace(content.reverse) if block
       end
 
       private
 
       # updates all unique id's present in the xml being copied
       def update_unique_ids(env, content)
+        return unless env.document
         doc_xml = env.document.zip_contents[env.document.current_entry]
         dom_entry = env.document[env.document.current_entry]
         #
