@@ -14,6 +14,7 @@ module Sablon
     class Loop < Struct.new(:list_expr, :iterator_name, :block)
       def evaluate(env)
         value = list_expr.evaluate(env.context)
+        value = [] if value.nil?
         value = value.to_ary if value.respond_to?(:to_ary)
         raise ContextError, "The expression #{list_expr.inspect} should evaluate to an enumerable but was: #{value.inspect}" unless value.is_a?(Enumerable)
 
@@ -156,7 +157,11 @@ module Sablon
   module Expression
     class Variable < Struct.new(:name)
       def evaluate(context)
-        context[name]
+        if context.is_a?(Hash)
+          context[name]
+        else
+          context.context[name]
+        end
       end
 
       def inspect
