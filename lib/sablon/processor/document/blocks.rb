@@ -81,6 +81,10 @@ module Sablon
       end
 
       class ParagraphBlock < Block
+        def self.parent_selector
+          './/w:p'
+        end
+
         def self.encloses?(start_field, end_field)
           super && parent(start_field) != parent(end_field)
         end
@@ -90,6 +94,10 @@ module Sablon
         def self.encloses?(start_field, end_field)
           start_field.expression.start_with?('@')
         end
+
+        # def self.parent_selector
+        #   './/w:p'
+        # end
 
         def replace(image)
           # we need to include the start and end nodes in case the image is
