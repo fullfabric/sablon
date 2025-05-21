@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 module Sablon
   module Statement
     class Insertion < Struct.new(:expr, :field)
@@ -16,7 +15,10 @@ module Sablon
         value = list_expr.evaluate(env.context)
         value = [] if value.nil?
         value = value.to_ary if value.respond_to?(:to_ary)
-        raise ContextError, "The expression #{list_expr.inspect} should evaluate to an enumerable but was: #{value.inspect}" unless value.is_a?(Enumerable)
+        unless value.is_a?(Enumerable)
+          raise ContextError,
+                "The expression #{list_expr.inspect} should evaluate to an enumerable but was: #{value.inspect}"
+        end
 
         content = value.flat_map do |item|
           iter_env = env.alter_context(iterator_name => item)
@@ -38,10 +40,49 @@ module Sablon
 
       def truthy?(value)
         case value
-        when Array;
+        when Array
           !value.empty?
         else
           !!value
+        end
+      end
+    end
+
+    class ExpressiveCondition < Struct.new(:left_operand, :operator, :right_operand, :block)
+      def evaluate(env)
+        # Support both string literal and expression evaluation
+        left = parse_operand(left_operand, env)
+
+        right = parse_operand(right_operand, env)
+
+        if build_operation(operator, left, right).call
+          block.replace(block.process(env).reverse)
+        else
+          block.replace([])
+        end
+      end
+
+      private
+
+      def build_operation(operator, left, right)
+        operations = {
+          '==' => -> { left == right },
+          '!=' => -> { left != right },
+          '<' => -> { left < right },
+          '>' => -> { left > right },
+          '<=' => -> { left <= right },
+          '>=' => -> { left >= right }
+        }
+        raise ArgumentError, "Unknown operator: #{operator}" unless operations.key?(operator)
+
+        operations[operator]
+      end
+
+      def parse_operand(operand, env)
+        if operand.start_with?('"', "'")
+          operand[1..-2]
+        else
+          Expression.parse(operand).evaluate(env)
         end
       end
     end
@@ -77,14 +118,14 @@ module Sablon
 
     class LookupOrMethodCall < Struct.new(:receiver_expr, :expression)
       def evaluate(context)
-        if receiver = receiver_expr.evaluate(context)
-          expression.split(".").inject(receiver) do |local, m|
-            case local
-            when Hash
-              local[m]
-            else
-              local.public_send m if local.respond_to?(m)
-            end
+        return unless receiver = receiver_expr.evaluate(context)
+
+        expression.split('.').inject(receiver) do |local, m|
+          case local
+          when Hash
+            local[m]
+          else
+            local.public_send m if local.respond_to?(m)
           end
         end
       end
@@ -95,9 +136,9 @@ module Sablon
     end
 
     def self.parse(expression)
-      if expression.include?(".")
-        parts = expression.split(".")
-        LookupOrMethodCall.new(Variable.new(parts.shift), parts.join("."))
+      if expression.include?('.')
+        parts = expression.split('.')
+        LookupOrMethodCall.new(Variable.new(parts.shift), parts.join('.'))
       else
         Variable.new(expression)
       end
