@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 module Sablon
   module Processor
     class Document
@@ -27,13 +26,14 @@ module Sablon
       end
 
       def write_properties(xml_node, properties)
-        if start_page_number = properties[:start_page_number] || properties["start_page_number"]
-          section_properties = SectionProperties.from_document(xml_node)
-          section_properties.start_page_number = start_page_number
-        end
+        return unless start_page_number = properties[:start_page_number] || properties['start_page_number']
+
+        section_properties = SectionProperties.from_document(xml_node)
+        section_properties.start_page_number = start_page_number
       end
 
       private
+
       def build_operations(fields)
         OperationConstruction.new(fields).operations
       end
@@ -44,7 +44,7 @@ module Sablon
 
       def fill_empty_table_cells(xml_node)
         xml_node.xpath("//w:tc[count(*[name() = 'w:p'])=0 or not(*)]").each do |blank_cell|
-          filler = Nokogiri::XML::Node.new("w:p", xml_node.document)
+          filler = Nokogiri::XML::Node.new('w:p', xml_node.document)
           blank_cell.add_child filler
         end
       end
@@ -57,7 +57,7 @@ module Sablon
         end
 
         def process(env)
-          replaced_node = Nokogiri::XML::Node.new("tmp", start_node.document)
+          replaced_node = Nokogiri::XML::Node.new('tmp', start_node.document)
           replaced_node.children = Nokogiri::XML::NodeSet.new(start_node.document, body.map(&:dup))
           Processor::Document.process replaced_node, env
           replaced_node.children
@@ -69,13 +69,14 @@ module Sablon
         end
 
         def remove_control_elements
-          body.each &:remove
+          body.each(&:remove)
           start_node.remove
           end_node.remove
         end
 
         def body
           return @body if defined?(@body)
+
           @body = []
           node = start_node
           while (node = node.next_element) && node != end_node
@@ -99,7 +100,7 @@ module Sablon
 
       class RowBlock < Block
         def self.parent(node)
-          node.ancestors ".//w:tr"
+          node.ancestors './/w:tr'
         end
 
         def self.encloses?(start_field, end_field)
@@ -109,7 +110,7 @@ module Sablon
 
       class ParagraphBlock < Block
         def self.parent(node)
-          node.ancestors ".//w:p"
+          node.ancestors './/w:p'
         end
 
         def self.encloses?(start_field, end_field)
@@ -122,18 +123,19 @@ module Sablon
           node.ancestors
         end
 
-        def self.encloses?(start_field, end_field)
+        def self.encloses?(start_field, _end_field)
           start_field.expression.start_with?('@')
         end
 
         def replace(content)
-          if !content.first
+          unless content.first
             start_field.remove
             end_field.remove
             return
           end
 
-          pic_prop = self.class.parent(start_field).at_xpath('.//pic:cNvPr', pic: Sablon::Processor::Image::PICTURE_NS_URI)
+          pic_prop = self.class.parent(start_field).at_xpath('.//pic:cNvPr',
+                                                             pic: Sablon::Processor::Image::PICTURE_NS_URI)
           name = content.first.name
           pic_prop.attributes['name'].value = name
           blip = self.class.parent(start_field).at_xpath('.//a:blip', a: Sablon::Processor::Image::MAIN_NS_URI)
@@ -146,11 +148,11 @@ module Sablon
 
       class InlineParagraphBlock < Block
         def self.parent(node)
-          node.ancestors ".//w:p"
+          node.ancestors './/w:p'
         end
 
         def remove_control_elements
-          body.each &:remove
+          body.each(&:remove)
           start_field.remove
           end_field.remove
         end
@@ -175,35 +177,37 @@ module Sablon
         end
 
         def operations
-          while @fields.any?
-            @operations << consume(true)
-          end
+          @operations << consume(true) while @fields.any?
           @operations.compact
         end
 
         def consume(allow_insertion)
           @field = @fields.shift
           return unless @field
+
           case @field.expression
           when /^=/
-            if allow_insertion
-              Statement::Insertion.new(Expression.parse(@field.expression[1..-1]), @field)
-            end
+            Statement::Insertion.new(Expression.parse(@field.expression[1..]), @field) if allow_insertion
           when /([^ ]+):each\(([^ ]+)\)/
-            block = consume_block("#{$1}:endEach")
-            Statement::Loop.new(Expression.parse($1), $2, block)
-          when /([^ ]+):if\(([^)]+)\)/
-            block = consume_block("#{$1}:endIf")
-            Statement::Condition.new(Expression.parse($1), block, $2)
-          when /([^ ]+):if/
-            block = consume_block("#{$1}:endIf")
-            Statement::Condition.new(Expression.parse($1), block)
+            block = consume_block("#{::Regexp.last_match(1)}:endEach")
+            Statement::Loop.new(Expression.parse(::Regexp.last_match(1)), ::Regexp.last_match(2), block)
+          when /([^ ]+):if\(([^)]+)\)$/
+            block = consume_block("#{::Regexp.last_match(1)}:endIf")
+            Statement::Condition.new(Expression.parse(::Regexp.last_match(1)), block, ::Regexp.last_match(2))
+          when /([^ ]+):if$/
+            block = consume_block("#{::Regexp.last_match(1)}:endIf")
+            Statement::Condition.new(Expression.parse(::Regexp.last_match(1)), block)
           when /comment/
-            block = consume_block("endComment")
+            block = consume_block('endComment')
             Statement::Comment.new(block)
           when /^@([^ ]+):start/
-            block = consume_block("@#{$1}:end")
-            Statement::Image.new(Expression.parse($1), block)
+            block = consume_block("@#{::Regexp.last_match(1)}:end")
+            Statement::Image.new(Expression.parse(::Regexp.last_match(1)), block)
+          when /([^ ]+):if\s*(==|!=|<=|>=|<|>)\s*(['"].+?['"]|[\w.]+)$/
+            block = consume_block("#{::Regexp.last_match(1)}:endIf")
+            Statement::ExpressiveCondition.new(
+              ::Regexp.last_match(1), ::Regexp.last_match(2), ::Regexp.last_match(3), block
+            )
           end
         end
 
@@ -217,7 +221,8 @@ module Sablon
           if end_field
             Block.enclosed_by start_field, end_field
           else
-            raise TemplateError, "Could not find end field for «#{start_field.expression}». Was looking for «#{end_expression}»"
+            raise TemplateError,
+                  "Could not find end field for «#{start_field.expression}». Was looking for «#{end_expression}»"
           end
         end
       end
