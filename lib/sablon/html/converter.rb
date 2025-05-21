@@ -1,5 +1,7 @@
-require "sablon/html/ast"
-require "sablon/html/visitor"
+# frozen_string_literal: true
+
+require 'sablon/html/ast'
+require 'sablon/html/visitor'
 
 module Sablon
   class HTMLConverter
@@ -32,15 +34,15 @@ module Sablon
       end
 
       def done?
-        !current_layer.items.any?
+        current_layer.items.none?
       end
 
       def nested?
-        ilvl > 0
+        ilvl.positive?
       end
 
       def ilvl
-        @layers.select { |layer| layer.ilvl }.size - 1
+        @layers.select(&:ilvl).size - 1
       end
 
       def emit(node)
@@ -48,6 +50,7 @@ module Sablon
       end
 
       private
+
       def current_layer
         if @layers.any?
           last_layer = @layers.last
@@ -75,11 +78,9 @@ module Sablon
 
     def build_ast(input)
       doc = Nokogiri::HTML.fragment(input)
-      @builder = ASTBuilder.new(doc.children)
 
-      while !@builder.done?
-        ast_next_paragraph
-      end
+      @builder = ASTBuilder.new(doc.children)
+      ast_next_paragraph until @builder.done?
       @builder.to_ast
     end
 
@@ -95,23 +96,21 @@ module Sablon
         @builder.emit Paragraph.new('Paragraph', ast_text(node.children))
       elsif node.name =~ /h(\d+)/
         @builder.new_layer
-        @builder.emit Paragraph.new("Heading#{$1}", ast_text(node.children))
+        @builder.emit Paragraph.new("Heading#{::Regexp.last_match(1)}", ast_text(node.children))
       elsif node.name == 'ul'
         @builder.new_layer ilvl: true
-        unless @builder.nested?
-          @definition = Sablon::Numbering.instance.register('ListBullet')
-        end
+        @definition = Sablon::Numbering.instance.register('ListBullet') unless @builder.nested?
         @builder.push_all(node.children)
       elsif node.name == 'ol'
         @builder.new_layer ilvl: true
-        unless @builder.nested?
-          @definition = Sablon::Numbering.instance.register('ListNumber')
-        end
+        @definition = Sablon::Numbering.instance.register('ListNumber') unless @builder.nested?
         @builder.push_all(node.children)
       elsif node.name == 'li'
         @builder.new_layer
         @builder.emit ListParagraph.new(@definition.style, ast_text(node.children), @definition.numid, @builder.ilvl)
       elsif node.text?
+        # SKIP?
+      elsif node.element?
         # SKIP?
       else
         raise ArgumentError, "Don't know how to handle node: #{node.inspect}"
@@ -126,13 +125,13 @@ module Sablon
           Newline.new
         elsif node.name == 'span'
           ast_text(node.children).nodes
-        elsif node.name == 'strong' || node.name == 'b'
+        elsif %w[strong b].include?(node.name)
           ast_text(node.children, format: format.with_bold).nodes
-        elsif node.name == 'em' || node.name == 'i'
+        elsif %w[em i].include?(node.name)
           ast_text(node.children, format: format.with_italic).nodes
         elsif node.name == 'u'
           ast_text(node.children, format: format.with_underline).nodes
-        elsif ['ul', 'ol', 'p', 'div'].include?(node.name)
+        elsif %w[ul ol p div].include?(node.name)
           @builder.push(node)
           nil
         else

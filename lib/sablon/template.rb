@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Sablon
   class Template
     def initialize(path)
@@ -17,6 +19,7 @@ module Sablon
     end
 
     private
+
     def render(context, properties = {})
       Sablon::Numbering.instance.reset!
       env = Sablon::Environment.new(self, context)
@@ -27,15 +30,16 @@ module Sablon
           entry_name = entry.name
           out.put_next_entry(entry_name)
           content = entry.get_input_stream.read
-          if entry_name == 'word/document.xml'
+          case entry_name
+          when 'word/document.xml'
             out.write(process(Processor::Document, content, env, properties))
-          elsif entry_name =~ /word\/header\d*\.xml/ || entry_name =~ /word\/footer\d*\.xml/
+          when %r{word/header\d*\.xml}, %r{word/footer\d*\.xml}
             out.write(process(Processor::Document, content, env))
-          elsif entry_name == 'word/numbering.xml'
+          when 'word/numbering.xml'
             out.write(process(Processor::Numbering, content))
-          elsif entry_name == 'word/_rels/document.xml.rels'
+          when 'word/_rels/document.xml.rels'
             out.write(process(Processor::Image, content, properties, out))
-          elsif entry_name == '[Content_Types].xml'
+          when '[Content_Types].xml'
             out.write(process(Processor::ContentType, content, properties, out))
           else
             out.write(content)

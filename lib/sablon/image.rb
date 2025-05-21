@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Sablon
   class Image
     include Singleton

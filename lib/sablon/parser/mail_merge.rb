@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 module Sablon
   module Parser
     class MailMerge
       class MergeField
-        KEY_PATTERN = /^\s*MERGEFIELD\s+(.+?)\s+\\\*\s+MERGEFORMAT\s*$/
+        KEY_PATTERN = /^\s*MERGEFIELD\s+(.+?)\s+\\\*\s+MERGEFORMAT\s*$/.freeze
 
         def valid?
           expression
@@ -96,7 +98,7 @@ module Sablon
         private
 
         def remove_extra_runs!
-          @node.search('.//w:r')[1..-1].each(&:remove)
+          @node.search('.//w:r')[1..].each(&:remove)
         end
       end
 
@@ -108,7 +110,7 @@ module Sablon
           elsif node.name == 'fldChar' && node['w:fldCharType'] == 'begin'
             field = build_complex_field(node)
           end
-          fields << field if field && field.valid?
+          fields << field if field&.valid?
         end
         fields
       end

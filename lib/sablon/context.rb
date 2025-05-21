@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Sablon
   # A context represents the user supplied arguments to render a
   # template.
@@ -17,6 +19,8 @@ module Sablon
         case value
         when Hash
           [key, transform_hash(value)]
+        # when Array
+        #   [key, value.map { |v| transform_pair(key, v) }]
         else
           [key, value]
         end
@@ -53,6 +57,6 @@ module Sablon
       end
 
       result.flatten.compact
-    end  
+    end
   end
 end

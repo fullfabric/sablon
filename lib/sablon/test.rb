@@ -1,1 +1,3 @@
-require "sablon/test/assertions"
+# frozen_string_literal: true
+
+require 'sablon/test/assertions'

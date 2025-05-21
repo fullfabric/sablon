@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 module Sablon
   module Statement
-    class Insertion < Struct.new(:expr, :field)
+    Insertion = Struct.new(:expr, :field) do
       def evaluate(env)
-        if content = expr.evaluate(env.context)
+        if (content = expr.evaluate(env.context))
           field.replace(Sablon::Content.wrap(content))
         else
           field.remove
@@ -10,7 +12,7 @@ module Sablon
       end
     end
 
-    class Loop < Struct.new(:list_expr, :iterator_name, :block)
+    Loop = Struct.new(:list_expr, :iterator_name, :block) do
       def evaluate(env)
         value = list_expr.evaluate(env.context)
         value = [] if value.nil?
@@ -24,11 +26,11 @@ module Sablon
           iter_env = env.alter_context(iterator_name => item)
           block.process(iter_env)
         end
-        block.replace(content.reverse) if block
+        block&.replace(content.reverse)
       end
     end
 
-    class Condition < Struct.new(:conditon_expr, :block, :predicate)
+    Condition = Struct.new(:conditon_expr, :block, :predicate) do
       def evaluate(env)
         value = conditon_expr.evaluate(env.context)
         if truthy?(predicate ? value.public_send(predicate) : value)
@@ -48,7 +50,7 @@ module Sablon
       end
     end
 
-    class ExpressiveCondition < Struct.new(:left_operand, :operator, :right_operand, :block)
+    ExpressiveCondition = Struct.new(:left_operand, :operator, :right_operand, :block) do
       def evaluate(env)
         # Support both string literal and expression evaluation
         left = parse_operand(left_operand, env)
@@ -87,13 +89,13 @@ module Sablon
       end
     end
 
-    class Comment < Struct.new(:block)
+    Comment = Struct.new(:block) do
       def evaluate(_env)
         block.replace []
       end
     end
 
-    class Image < Struct.new(:image_reference, :block)
+    Image = Struct.new(:image_reference, :block) do
       def evaluate(context)
         image = image_reference.evaluate(context)
         block.replace([image])
@@ -102,7 +104,7 @@ module Sablon
   end
 
   module Expression
-    class Variable < Struct.new(:name)
+    Variable = Struct.new(:name) do
       def evaluate(context)
         if context.is_a?(Hash)
           context[name]
@@ -116,9 +118,9 @@ module Sablon
       end
     end
 
-    class LookupOrMethodCall < Struct.new(:receiver_expr, :expression)
+    LookupOrMethodCall = Struct.new(:receiver_expr, :expression) do
       def evaluate(context)
-        return unless receiver = receiver_expr.evaluate(context)
+        return unless (receiver = receiver_expr.evaluate(context))
 
         expression.split('.').inject(receiver) do |local, m|
           case local

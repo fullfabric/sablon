@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Sablon
   module Processor
     class Document
@@ -26,7 +28,7 @@ module Sablon
       end
 
       def write_properties(xml_node, properties)
-        return unless start_page_number = properties[:start_page_number] || properties['start_page_number']
+        return unless (start_page_number = properties[:start_page_number] || properties['start_page_number'])
 
         section_properties = SectionProperties.from_document(xml_node)
         section_properties.start_page_number = start_page_number
@@ -49,7 +51,7 @@ module Sablon
         end
       end
 
-      class Block < Struct.new(:start_field, :end_field)
+      Block = Struct.new(:start_field, :end_field) do
         def self.enclosed_by(start_field, end_field)
           @blocks ||= [ImageBlock, RowBlock, ParagraphBlock, InlineParagraphBlock]
           block_class = @blocks.detect { |klass| klass.encloses?(start_field, end_field) }

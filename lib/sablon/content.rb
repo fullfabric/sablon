@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Sablon
   module Content
     class << self
@@ -6,20 +8,19 @@ module Sablon
         when Sablon::Content
           value
         else
-          if type = type_wrapping(value)
-            type.new(value)
-          else
+          unless (type = type_wrapping(value))
             raise ArgumentError, "Could not find Sablon content type to wrap #{value.inspect}"
           end
+
+          type.new(value)
+
         end
       end
 
       def make(type_id, *args)
-        if types.key?(type_id)
-          types[type_id].new(*args)
-        else
-          raise ArgumentError, "Could not find Sablon content type with id '#{type_id}'"
-        end
+        raise ArgumentError, "Could not find Sablon content type with id '#{type_id}'" unless types.key?(type_id)
+
+        types[type_id].new(*args)
       end
 
       def register(content_type)
@@ -27,10 +28,11 @@ module Sablon
       end
 
       def remove(content_type_or_id)
-        types.delete_if {|k,v| k == content_type_or_id || v == content_type_or_id }
+        types.delete_if { |k, v| k == content_type_or_id || v == content_type_or_id }
       end
 
       private
+
       def type_wrapping(value)
         types.values.reverse.detect { |type| type.wraps?(value) }
       end
@@ -40,9 +42,12 @@ module Sablon
       end
     end
 
-    class String < Struct.new(:string)
+    String = Struct.new(:string) do
       include Sablon::Content
-      def self.id; :string end
+      def self.id
+        :string
+      end
+
       def self.wraps?(value)
         value.respond_to?(:to_s)
       end
@@ -51,10 +56,10 @@ module Sablon
         super value.to_s
       end
 
-      def append_to(paragraph, display_node)
+      def append_to(_paragraph, display_node)
         string.scan(/[^\n]+|\n/).reverse.each do |part|
           if part == "\n"
-            display_node.add_next_sibling Nokogiri::XML::Node.new "w:br", display_node.document
+            display_node.add_next_sibling Nokogiri::XML::Node.new 'w:br', display_node.document
           else
             text_part = display_node.dup
             text_part.content = part
@@ -64,12 +69,17 @@ module Sablon
       end
     end
 
-    class WordML < Struct.new(:xml)
+    WordML = Struct.new(:xml) do
       include Sablon::Content
-      def self.id; :word_ml end
-      def self.wraps?(value) false end
+      def self.id
+        :word_ml
+      end
 
-      def append_to(paragraph, display_node)
+      def self.wraps?(_value)
+        false
+      end
+
+      def append_to(paragraph, _display_node)
         Nokogiri::XML.fragment(xml).children.reverse.each do |child|
           paragraph.add_next_sibling child
         end
@@ -77,10 +87,15 @@ module Sablon
       end
     end
 
-    class HTML < Struct.new(:word_ml)
+    HTML = Struct.new(:word_ml) do
       include Sablon::Content
-      def self.id; :html end
-      def self.wraps?(value) false end
+      def self.id
+        :html
+      end
+
+      def self.wraps?(_value)
+        false
+      end
 
       def initialize(html)
         converter = HTMLConverter.new

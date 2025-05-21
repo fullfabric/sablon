@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # The code of that class was inspired in "kubido Fork - https://github.com/kubido/"
 
 module Sablon
@@ -48,8 +50,8 @@ module Sablon
       private
 
       def next_rel_id
-        @doc.xpath('r:Relationships/r:Relationship', 'r' => RELATIONSHIPS_NS_URI).inject(0) do |max ,n|
-          id = n.attributes['Id'].to_s[3..-1].to_i
+        @doc.xpath('r:Relationships/r:Relationship', 'r' => RELATIONSHIPS_NS_URI).inject(0) do |max, n|
+          id = n.attributes['Id'].to_s[3..].to_i
           [id, max].max
         end + 1
       end

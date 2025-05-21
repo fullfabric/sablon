@@ -1,18 +1,22 @@
-require "bundler/setup"
+# frozen_string_literal: true
 
-require "minitest/autorun"
-require "minitest/mock"
-require "xmlsimple"
-require "json"
-require "pathname"
+require 'bundler/setup'
 
-$: << File.expand_path('../../lib', __FILE__)
-require "sablon"
-require "sablon/test"
+require 'minitest/autorun'
+require 'minitest/mock'
+require 'xmlsimple'
+require 'json'
+require 'pathname'
 
-class Sablon::TestCase < MiniTest::Test
-  def teardown
-    super
-    Sablon::Numbering.instance.reset!
+$LOAD_PATH << File.expand_path('../lib', __dir__)
+require 'sablon'
+require 'sablon/test'
+
+module Sablon
+  class TestCase < Minitest::Test
+    def teardown
+      super
+      Sablon::Numbering.instance.reset!
+    end
   end
 end
