@@ -67,6 +67,8 @@ module Sablon
       private
 
       def build_operation(operator, left, right)
+        return -> { false } unless left && right
+
         operations = {
           '==' => -> { left == right },
           '!=' => -> { left != right },
