@@ -85,6 +85,10 @@ module Sablon
       def parse_operand(operand, env)
         if operand.start_with?('"', "'")
           operand[1..-2]
+        elsif operand.match?(/^\d+$/)
+          operand.to_i
+        elsif operand.match?(/^\d+\.\d+$/)
+          operand.to_f
         else
           Expression.parse(operand).evaluate(env)
         end
