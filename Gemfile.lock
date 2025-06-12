@@ -1,22 +1,24 @@
 PATH
   remote: .
   specs:
-    sablon (0.0.21)
+    sablon (0.0.23)
       nokogiri (>= 1.10.0)
       rubyzip (>= 1.1)
 
 GEM
   remote: https://rubygems.org/
   specs:
-    mini_portile2 (2.8.5)
-    minitest (5.8.0)
-    nokogiri (1.15.5)
+    mini_portile2 (2.8.9)
+    minitest (5.25.5)
+    nokogiri (1.15.7)
       mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
-    racc (1.7.3)
-    rake (10.4.2)
-    rubyzip (2.3.2)
-    xml-simple (1.1.5)
+    racc (1.8.1)
+    rake (10.5.0)
+    rexml (3.4.1)
+    rubyzip (2.4.1)
+    xml-simple (1.1.9)
+      rexml
 
 PLATFORMS
   ruby

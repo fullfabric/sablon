@@ -1,9 +1,10 @@
+# frozen_string_literal: true
+
 module Sablon
   # Combines the user supplied context and template into a single object
   # to manage data during template processing.
   class Environment
-    attr_reader :template
-    attr_reader :context
+    attr_reader :template, :context
 
     # returns a new environment with merged contexts
     def alter_context(context = {})

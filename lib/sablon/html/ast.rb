@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Sablon
   class HTMLConverter
     class Node
@@ -12,6 +14,7 @@ module Sablon
 
     class Collection < Node
       attr_reader :nodes
+
       def initialize(nodes)
         @nodes = nodes
       end
@@ -46,22 +49,24 @@ module Sablon
 
     class Paragraph < Node
       attr_accessor :style, :runs
+
       def initialize(style, runs)
-        @style, @runs = style, runs
+        @style = style
+        @runs = runs
       end
 
-      PATTERN = <<-XML.gsub("\n", "")
-<w:p>
-<w:pPr>
-<w:pStyle w:val="%s" />
-%s
-</w:pPr>
-%s
-</w:p>
-XML
+      PATTERN = <<~XML.gsub("\n", '')
+        <w:p>
+        <w:pPr>
+        <w:pStyle w:val="%s" />
+        %s
+        </w:pPr>
+        %s
+        </w:p>
+      XML
 
       def to_docx
-        PATTERN % [style, ppr_docx, runs.to_docx]
+        format(PATTERN, style, ppr_docx, runs.to_docx)
       end
 
       def accept(visitor)
@@ -74,18 +79,19 @@ XML
       end
 
       private
-      def ppr_docx
-      end
+
+      def ppr_docx; end
     end
 
     class ListParagraph < Paragraph
-      LIST_STYLE = <<-XML.gsub("\n", "")
-<w:numPr>
-<w:ilvl w:val="%s" />
-<w:numId w:val="%s" />
-</w:numPr>
-XML
+      LIST_STYLE = <<~XML.gsub("\n", '')
+        <w:numPr>
+        <w:ilvl w:val="%s" />
+        <w:numId w:val="%s" />
+        </w:numPr>
+      XML
       attr_accessor :numid, :ilvl
+
       def initialize(style, runs, numid, ilvl)
         super style, runs
         @numid = numid
@@ -93,8 +99,9 @@ XML
       end
 
       private
+
       def ppr_docx
-        LIST_STYLE % [@ilvl, numid]
+        format(LIST_STYLE, @ilvl, numid)
       end
     end
 
@@ -144,6 +151,7 @@ XML
 
     class Text < Node
       attr_reader :string
+
       def initialize(string, format)
         @string = string
         @format = format
@@ -158,6 +166,7 @@ XML
       end
 
       private
+
       def normalized_string
         string.tr("\u00A0", ' ')
       end
@@ -165,11 +174,11 @@ XML
 
     class Newline < Node
       def to_docx
-        "<w:r><w:br/></w:r>"
+        '<w:r><w:br/></w:r>'
       end
 
       def inspect
-        "<Newline>"
+        '<Newline>'
       end
     end
   end

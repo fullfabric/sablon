@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Sablon
   module Processor
     class Numbering
@@ -24,23 +26,22 @@ module Sablon
           abstract_num_copy['w:abstractNumId'] = definition.numid
           abstract_num_copy.xpath('./w:nsid').each(&:remove)
           container.prepend_child abstract_num_copy
-          container.add_child(LIST_DEFINITION % [definition.numid, abstract_num_copy['w:abstractNumId']])
+          container.add_child(format(LIST_DEFINITION, definition.numid, abstract_num_copy['w:abstractNumId']))
         end
         @doc
       end
 
       private
+
       def container
         @container ||= @doc.xpath('//w:numbering').first
       end
 
       def find_definition(style)
         abstract_num = @doc.xpath("//w:abstractNum[descendant-or-self::*[w:pStyle[@w:val='#{style}']]]").first
-        if abstract_num
-          abstract_num
-        else
-          raise ArgumentError, "Could not find w:abstractNum definition for style: #{style.inspect}"
-        end
+        raise ArgumentError, "Could not find w:abstractNum definition for style: #{style.inspect}" unless abstract_num
+
+        abstract_num
       end
     end
   end

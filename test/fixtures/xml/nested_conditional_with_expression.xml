@@ -1,0 +1,51 @@
+<w:r>
+  <w:t xml:space="preserve">Anthony</w:t>
+</w:r>
+<w:p>
+  <w:fldSimple w:instr=" MERGEFIELD middle_name:if == 'Michael' \* MERGEFORMAT ">
+    <w:r>
+      <w:rPr>
+        <w:noProof />
+      </w:rPr>
+      <w:t>«middle_name:if»</w:t>
+    </w:r>
+  </w:fldSimple>
+</w:p>
+<w:p>
+  <w:fldSimple w:instr=" MERGEFIELD age:if >= 18 \* MERGEFORMAT ">
+    <w:r>
+      <w:rPr>
+        <w:noProof />
+      </w:rPr>
+      <w:t>«age:if»</w:t>
+    </w:r>
+  </w:fldSimple>
+</w:p>
+<w:p>
+  <w:r>
+    <w:t xml:space="preserve">Michael</w:t>
+  </w:r>
+</w:p>
+<w:p>
+  <w:fldSimple w:instr=" MERGEFIELD age:endIf \* MERGEFORMAT ">
+    <w:r>
+      <w:rPr>
+        <w:noProof />
+      </w:rPr>
+      <w:t>«age:endIf»</w:t>
+    </w:r>
+  </w:fldSimple>
+</w:p>
+<w:p>
+  <w:fldSimple w:instr=" MERGEFIELD middle_name:endIf \* MERGEFORMAT ">
+    <w:r>
+      <w:rPr>
+        <w:noProof />
+      </w:rPr>
+      <w:t>«middle_name:endIf»</w:t>
+    </w:r>
+  </w:fldSimple>
+</w:p>
+<w:r>
+  <w:t xml:space="preserve">Hall</w:t>
+</w:r>
