@@ -56,6 +56,10 @@ module Sablon
         left = parse_operand(left_operand, env)
         right = parse_operand(right_operand, env)
 
+        # Handle single-element arrays
+        left = left.first if left.is_a?(Array) && left.size == 1
+        right = right.first if right.is_a?(Array) && right.size == 1
+
         if build_operation(operator, left, right).call
           block.replace(block.process(env).reverse)
         else
@@ -69,20 +73,17 @@ module Sablon
         return -> { false } unless left && right
 
         operations = {
-          '==' => -> { array_includes?(left, right) || left == right },
-          '!=' => -> { !(array_includes?(left, right) || left == right) },
+          '==' => -> { left == right },
+          '!=' => -> { left != right },
           '<' => -> { left < right },
           '>' => -> { left > right },
           '<=' => -> { left <= right },
-          '>=' => -> { left >= right }
+          '>=' => -> { left >= right },
+          'includes' => -> { left.is_a?(Array) && left.include?(right) }
         }
         raise ArgumentError, "Unknown operator: #{operator}" unless operations.key?(operator)
 
         operations[operator]
-      end
-
-      def array_includes?(left, right)
-        (left.is_a?(Array) && left.include?(right)) || (right.is_a?(Array) && right.include?(left))
       end
 
       def parse_operand(operand, env)
