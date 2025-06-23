@@ -379,6 +379,10 @@ class ProcessorDocumentTest < Sablon::TestCase
     result = process(snippet('conditional_with_expression'),
                      { 'first_name' => 'Michael', 'middle_name' => 'Andrew', 'last_name' => 'Hall' })
     assert_equal 'Anthony Hall', text(result)
+
+    result = process(snippet('conditional_with_expression'),
+                     { 'first_name' => 'Anthony', 'genders' => %w[Male Female], 'last_name' => 'Hall' })
+    assert_equal "Anthony Hall Genders include 'Male'", text(result)
   end
 
   def test_nested_conditional_expression

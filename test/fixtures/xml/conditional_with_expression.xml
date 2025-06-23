@@ -30,4 +30,29 @@
   <w:r>
     <w:t>Hall</w:t>
   </w:r>
+  <w:r>
+    <w:t xml:space="preserve"> </w:t>
+  </w:r>
+  <w:fldSimple w:instr=" MERGEFIELD genders:if includes 'Male' \* MERGEFORMAT ">
+    <w:r>
+      <w:rPr>
+        <w:noProof />
+      </w:rPr>
+      <w:t>«genders:if»</w:t>
+    </w:r>
+  </w:fldSimple>
+  <w:r>
+    <w:t>Genders include 'Male'</w:t>
+  </w:r>
+  <w:r>
+    <w:t xml:space="preserve"> </w:t>
+  </w:r>
+  <w:fldSimple w:instr=" MERGEFIELD genders:endIf \* MERGEFORMAT ">
+    <w:r>
+      <w:rPr>
+        <w:noProof />
+      </w:rPr>
+      <w:t>«genders:endIf»</w:t>
+    </w:r>
+  </w:fldSimple>
 </w:p>
