@@ -54,7 +54,6 @@ module Sablon
       def evaluate(env)
         # Support both string literal and expression evaluation
         left = parse_operand(left_operand, env)
-
         right = parse_operand(right_operand, env)
 
         if build_operation(operator, left, right).call
@@ -70,8 +69,8 @@ module Sablon
         return -> { false } unless left && right
 
         operations = {
-          '==' => -> { left == right },
-          '!=' => -> { left != right },
+          '==' => -> { array_includes?(left, right) || left == right },
+          '!=' => -> { !(array_includes?(left, right) || left == right) },
           '<' => -> { left < right },
           '>' => -> { left > right },
           '<=' => -> { left <= right },
@@ -80,6 +79,10 @@ module Sablon
         raise ArgumentError, "Unknown operator: #{operator}" unless operations.key?(operator)
 
         operations[operator]
+      end
+
+      def array_includes?(left, right)
+        (left.is_a?(Array) && left.include?(right)) || (right.is_a?(Array) && right.include?(left))
       end
 
       def parse_operand(operand, env)
