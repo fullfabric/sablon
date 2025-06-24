@@ -78,7 +78,8 @@ module Sablon
           '<' => -> { left < right },
           '>' => -> { left > right },
           '<=' => -> { left <= right },
-          '>=' => -> { left >= right }
+          '>=' => -> { left >= right },
+          'includes' => -> { left.is_a?(Array) && left.include?(right) }
         }
         raise ArgumentError, "Unknown operator: #{operator}" unless operations.key?(operator)
 
