@@ -54,8 +54,11 @@ module Sablon
       def evaluate(env)
         # Support both string literal and expression evaluation
         left = parse_operand(left_operand, env)
-
         right = parse_operand(right_operand, env)
+
+        # Handle single-element arrays
+        left = left.first if left.is_a?(Array) && left.size == 1
+        right = right.first if right.is_a?(Array) && right.size == 1
 
         if build_operation(operator, left, right).call
           block.replace(block.process(env).reverse)
