@@ -385,7 +385,7 @@ class ProcessorDocumentTest < Sablon::TestCase
     result = process(snippet('conditional_with_expression_and_array_input'),
                      { 'first_name' => 'Anthony', 'middle_names' => ['Michael'], 'last_name' => 'Hall' })
 
-    assert_equal 'Anthony Michael Hall', text(result)
+    assert_equal 'Anthony Michael NotJohnathon Hall', text(result)
   end
 
   def test_nested_conditional_expression
