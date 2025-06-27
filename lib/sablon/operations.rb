@@ -56,9 +56,12 @@ module Sablon
         left = parse_operand(left_operand, env)
         right = parse_operand(right_operand, env)
 
-        # Handle single-element arrays
-        left = left.first if left.is_a?(Array) && left.size == 1
-        right = right.first if right.is_a?(Array) && right.size == 1
+        # Handle single-element arrays.
+        # This is necessary for dropdowns with multi-select disabled, because they still return arrays.
+        unless operator == 'includes'
+          left = left.first if left.is_a?(Array) && left.size == 1
+          right = right.first if right.is_a?(Array) && right.size == 1
+        end
 
         if build_operation(operator, left, right).call
           block.replace(block.process(env).reverse)
