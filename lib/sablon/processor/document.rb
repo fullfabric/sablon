@@ -205,7 +205,7 @@ module Sablon
           when /^@([^ ]+):start/
             block = consume_block("@#{::Regexp.last_match(1)}:end")
             Statement::Image.new(Expression.parse(::Regexp.last_match(1)), block)
-          when /([^ ]+):if\s*(==|!=|<=|>=|<|>|includes)\s*(['"].+?['"]|[\w.]+)$/
+          when /([^ ]+):if\s*(==|!=|<=|>=|<|>|includes|excludes)\s*(['"].+?['"]|[\w.]+)$/
             block = consume_block("#{::Regexp.last_match(1)}:endIf")
             Statement::ExpressiveCondition.new(
               ::Regexp.last_match(1), ::Regexp.last_match(2), ::Regexp.last_match(3), block

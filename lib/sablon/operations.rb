@@ -2,6 +2,8 @@
 
 module Sablon
   module Statement
+    ARRAY_OPERATIONS = %w[includes excludes].freeze
+
     Insertion = Struct.new(:expr, :field) do
       def evaluate(env)
         if (content = expr.evaluate(env.context))
@@ -58,7 +60,7 @@ module Sablon
 
         # Handle single-element arrays.
         # This is necessary for dropdowns with multi-select disabled, because they still return arrays.
-        unless operator == 'includes'
+        unless ARRAY_OPERATIONS.include?(operator)
           left = left.first if left.is_a?(Array) && left.size == 1
           right = right.first if right.is_a?(Array) && right.size == 1
         end
@@ -82,8 +84,10 @@ module Sablon
           '>' => -> { left > right },
           '<=' => -> { left <= right },
           '>=' => -> { left >= right },
-          'includes' => -> { left.is_a?(Array) && left.include?(right) }
+          'includes' => -> { left.is_a?(Array) && left.include?(right) },
+          'excludes' => -> { left.is_a?(Array) && !left.include?(right) }
         }
+
         raise ArgumentError, "Unknown operator: #{operator}" unless operations.key?(operator)
 
         operations[operator]
