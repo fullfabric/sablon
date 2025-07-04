@@ -28,6 +28,31 @@
     </w:r>
   </w:fldSimple>
   <w:r>
+    <w:t xml:space="preserve"> </w:t>
+  </w:r>
+  <w:fldSimple w:instr=" MERGEFIELD middle_names:if excludes 'Johnathon' \* MERGEFORMAT ">
+    <w:r>
+      <w:rPr>
+        <w:noProof />
+      </w:rPr>
+      <w:t>«middle_name:if»</w:t>
+    </w:r>
+  </w:fldSimple>
+  <w:r>
+    <w:t>NotJohnathon</w:t>
+  </w:r>
+  <w:r>
+    <w:t xml:space="preserve"> </w:t>
+  </w:r>
+  <w:fldSimple w:instr=" MERGEFIELD middle_names:endIf \* MERGEFORMAT ">
+    <w:r>
+      <w:rPr>
+        <w:noProof />
+      </w:rPr>
+      <w:t>«middle_name:endIf»</w:t>
+    </w:r>
+  </w:fldSimple>
+  <w:r>
     <w:t>Hall</w:t>
   </w:r>
 </w:p>
