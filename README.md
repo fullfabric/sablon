@@ -7,29 +7,28 @@ Is a document template processor for Word `docx` files. It leverages Word's
 built-in formatting and layouting capabilities to make template creation easy
 and efficient.
 
-
 #### Table of Contents
-* [Installation](#installation)
-* [Usage](#usage)
-   * [Writing Templates](#writing-templates)
-      * [Content Insertion](#content-insertion)
-         * [WordProcessingML](#wordprocessingml)
-         * [HTML](#html)
-         * [Images (Beta)](#images-beta)
-      * [Conditionals](#conditionals)
-      * [Loops](#loops)
-      * [Nesting](#nesting)
-      * [Comments](#comments)
-   * [Configuration (Beta)](#configuration-beta)
-      * [Customizing HTML Tag Conversion](#customizing-html-tag-conversion)
-      * [Customizing CSS Style Conversion](#customizing-css-style-conversion)
-   * [Executable](#executable)
-   * [Examples](#examples)
-      * [Using a Ruby script](#using-a-ruby-script)
-      * [Using the sablon executable](#using-the-sablon-executable)
-* [Contributing](#contributing)
-* [Inspiration](#inspiration)
 
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Writing Templates](#writing-templates)
+    - [Content Insertion](#content-insertion)
+      - [WordProcessingML](#wordprocessingml)
+      - [HTML](#html)
+      - [Images (Beta)](#images-beta)
+    - [Conditionals](#conditionals)
+    - [Loops](#loops)
+    - [Nesting](#nesting)
+    - [Comments](#comments)
+  - [Configuration (Beta)](#configuration-beta)
+    - [Customizing HTML Tag Conversion](#customizing-html-tag-conversion)
+    - [Customizing CSS Style Conversion](#customizing-css-style-conversion)
+  - [Executable](#executable)
+  - [Examples](#examples)
+    - [Using a Ruby script](#using-a-ruby-script)
+    - [Using the sablon executable](#using-the-sablon-executable)
+- [Contributing](#contributing)
+- [Inspiration](#inspiration)
 
 ## Installation
 
@@ -38,7 +37,6 @@ Add this line to your application's Gemfile:
 ```ruby
 gem 'sablon'
 ```
-
 
 ## Usage
 
@@ -51,7 +49,6 @@ context = {
 }
 template.render_to_file File.expand_path("~/Desktop/output.docx"), context
 ```
-
 
 ### Writing Templates
 
@@ -120,6 +117,7 @@ context = {
 }
 template.render_to_file File.expand_path("~/Desktop/output.docx"), context
 ```
+
 In the example above the entire paragraph will be replaced because all of the nodes being inserted aren't valid children of a paragraph (w:p) element. The example below shows inline insertion, where only runs are added and instead of replacing the entire paragraph only the merge field gets removed.
 
 **Important:** All text must be wrapped in a run tag for valid inline insertion because WordML is still inserted directly into the document "as is" without any structure transformations other than run properties being merged.
@@ -133,13 +131,43 @@ word_processing_ml = <<-XML.gsub("\n", "")
 <w:t>this is bold text</w:t>
 </w:r>
 XML
+##### Images [experimental]
+
+Add images to a document, the images data will be attach in the document.
+
+For use you need to create a Sablon::Image with Sablon::Image.create_by_path, for example:
+```
+
+Sablon::Image.create_by_path(@base_path + "fixtures/images/r2-d2.png")
+
+```
+
+Example:
+```
+
+context = {
+items: [
+{
+title: "C-3PO",
+image: Sablon::Image.create_by_path(@base_path + "fixtures/images/c-3po.jpg")
+}
+]
+}
+template.render_to_file output_path, context
+
+```
+
+For a complete example see the test file: "image_test.rb"
+
+This functionality was inspired in the [kubido fork](https://github.com/kubido/sablon) for this project - kubido/sablon
+
+##### HTML [experimental]
 
 context = {
   long_description: Sablon.content(:word_ml, word_processing_ml)
 }
 template.render_to_file File.expand_path("~/Desktop/output.docx"), context
 ```
-
 
 ##### HTML
 
@@ -219,13 +247,13 @@ value (i.e. `text-decoration: dstrike` for `w:dstrike`). Simple single value pro
 (`highlight: cyan` for `w:highlight`).
 
 Table, Paragraph and Run property references can be found at:
-  * http://officeopenxml.com/WPparagraphProperties.php
-  * http://officeopenxml.com/WPtextFormatting.php
-  * http://officeopenxml.com/WPtableProperties.php
+
+- http://officeopenxml.com/WPparagraphProperties.php
+- http://officeopenxml.com/WPtextFormatting.php
+- http://officeopenxml.com/WPtableProperties.php
 
 The full Open Office XML specification used to develop the HTML converter
 can be found [here](https://www.ecma-international.org/publications/standards/Ecma-376.htm) (3rd Edition).
-
 
 The example above shows an HTML insertion operation that will replace the entire paragraph. In the same fashion as WordML, inline HTML insertion is possible where only the merge field is replaced as long as only "inline" elements are used. "Inline" in this context does not necessarily mean the same thing as it does in CSS, in this case it means that once the HTML is converted to WordML only valid children of a paragraph (w:p) tag exist. As with WordML all plain text needs to be wrapped in a HTML tag. A simple `<span>..</span>` tag enclosing all other elements will suffice. See the example below:
 
@@ -244,7 +272,6 @@ context = {
 template.render_to_file File.expand_path("~/Desktop/output.docx"), context
 ```
 
-
 ##### Images (beta)
 
 Images can be added to the document using a placeholder image wrapped in a
@@ -258,7 +285,7 @@ method that returns image data. When using a "readable object" if the object
 doesn't have a `#filename` method then a `filename: '...'` option
 needs to be added to the `Sablon.content` method call.
 
-By default the inserted image takes the dimensions of the placeholder. The size of an image can also be defined dynamically by specifying width and height with unit (cm or in) in a properties hash like  `properties: {height: "2cm", width: "20cm"}`
+By default the inserted image takes the dimensions of the placeholder. The size of an image can also be defined dynamically by specifying width and height with unit (cm or in) in a properties hash like `properties: {height: "2cm", width: "20cm"}`
 
 ```ruby
 context = {
@@ -329,7 +356,6 @@ be placed in within table cells or enumeration items enclosing the rows or items
 to repeat. Have a look at the
 [example template](test/fixtures/cv_template.docx) for more details.
 
-
 #### Nesting
 
 It is possible to nest loops and conditionals.
@@ -351,6 +377,7 @@ styles for HTML insertion.
 The Sablon::Configuration singleton is a new feature that allows the end user to customize HTML parsing to their needs without needing to fork and edit the source code of the gem. This API is still in a beta state and may be subject to change as future needs are identified beyond HTML conversion.
 
 The example below show how to expose the configuration instance:
+
 ```ruby
 Sablon.configure do |config|
   # manipulate config object
@@ -362,17 +389,19 @@ The default set of registered HTML tags and CSS property conversions are defined
 #### Customizing HTML Tag Conversion
 
 Any HTML tag can be added using the configuration object even if it needs a custom AST class to handle conversion logic. Simple inline tags that only modify the style of text (i.e. the already supported `<b>` tag) can be added without an AST class as shown below:
+
 ```ruby
 Sablon.configure do |config|
   config.register_html_tag(:bgcyan, :inline, properties: { highlight: 'cyan' })
 end
 ```
-The above tag simply adds a background color to text using the `<w:highlight w:val="cyan" />` property.
 
+The above tag simply adds a background color to text using the `<w:highlight w:val="cyan" />` property.
 
 More complex business logic can be supported by adding a new class under the `Sablon::HTMLConverter` namespace. The new class will likely subclass `Sablon::HTMLConverter::Node` or `Sablon::HTMLConverter::Collection` depending on the needed behavior. The current AST classes serve as additional examples and can be found in [ast.rb](/lib/sablon/html/ast.rb). When registering a new HTML tag that uses a custom AST class the class must be passed in either by name using a lowercased and underscored symbol or the class object itself.
 
 The block below shows how to register a new HTML tag that adds the following AST class: `Sablon::HTMLConverter::InstrText`.
+
 ```ruby
 module Sablon
   class HTMLConverter
@@ -388,6 +417,7 @@ end
 ```
 
 Existing tags can be overwritten using the `config.register_html_tag` method or removed entirely using `config.remove_html_tag`.
+
 ```ruby
 # remove tag
 Sablon.configure do |config|
@@ -396,10 +426,10 @@ Sablon.configure do |config|
 end
 ```
 
-
 #### Customizing CSS Style Conversion
 
 The conversion of CSS stored in an element's `style="..."` attribute can be customized using the configuration object as well. Adding a new style conversion or overriding an existing one is done using the `config.register_style_converter` method. It accepts three arguments the name of the AST node (as a lowercased and underscored symbol) the style applies to, the name of the CSS property (needs to be a string in most cases) and a lambda that accepts a single argument, the property value. The example below shows how to add a new style that sets the `<w:highlight />` property.
+
 ```ruby
 # add style conversion
 Sablon.configure do |config|
@@ -410,6 +440,7 @@ end
 ```
 
 Existing conversions can be overwritten using the `config.register_style_converter` method or removed entirely using `config.remove_style_converter`.
+
 ```ruby
 # remove tag
 Sablon.configure do |config|
@@ -428,7 +459,6 @@ cat <context path>.json | sablon <template path> <output path>
 ```
 
 If no `<output path>` is given, the document will be printed to stdout.
-
 
 Have a look at [this test](test/executable_test.rb) for examples.
 
@@ -485,10 +515,9 @@ the data. Following is the resulting [output](test/fixtures/recipe_sample.docx):
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
 
-
 ## Inspiration
 
 These projects address a similar goal and inspired the work on Sablon:
 
-* [ruby-docx-templater](https://github.com/jawspeak/ruby-docx-templater)
-* [docx_mailmerge](https://github.com/annaswims/docx_mailmerge)
+- [ruby-docx-templater](https://github.com/jawspeak/ruby-docx-templater)
+- [docx_mailmerge](https://github.com/annaswims/docx_mailmerge)

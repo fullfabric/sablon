@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Sablon
   # Combines the user supplied context and template into a single object
   # to manage data during template processing.

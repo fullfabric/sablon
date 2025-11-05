@@ -1,3 +1,4 @@
+require 'singleton'
 require 'zip'
 require 'nokogiri'
 
@@ -7,7 +8,10 @@ require "sablon/configuration/configuration"
 require "sablon/context"
 require "sablon/environment"
 require "sablon/template"
+require 'sablon/image'
 require "sablon/processor/document"
+require 'sablon/processor/image'
+require 'sablon/processor/content_type'
 require "sablon/processor/section_properties"
 require "sablon/parser/mail_merge"
 require "sablon/operations"

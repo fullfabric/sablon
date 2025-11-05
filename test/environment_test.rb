@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-require "test_helper"
+require 'test_helper'
 
 class EnvironmentTest < Sablon::TestCase
   def test_transforms_internal_hash

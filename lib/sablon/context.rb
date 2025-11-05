@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Sablon
   # A context represents the user supplied arguments to render a
   # template.
@@ -39,6 +41,25 @@ module Sablon
           transform_standard_key(key, value)
         end
       end
+    end
+
+    def self.values_of(context, definition)
+      result = []
+
+      if context.is_a?(definition)
+        result << context
+      elsif context && (context.is_a?(Enumerable) || context.is_a?(OpenStruct))
+        context = context.to_h if context.is_a?(OpenStruct)
+        result += context.collect do |key, value|
+          if value
+            values_of(value, definition)
+          else
+            values_of(key, definition)
+          end
+        end.compact
+      end
+
+      result.flatten.compact
     end
   end
 end

@@ -99,6 +99,7 @@ module Sablon
     # work with the internal array as if it were a regular node
     class Collection < Node
       attr_reader :nodes
+
       def initialize(nodes)
         @properties ||= nil
         @attributes ||= {}
@@ -202,7 +203,6 @@ module Sablon
       end
     end
 
-    # Manages the child nodes of a list type tag
     class List < Collection
       def initialize(env, node, properties)
         # initialize values
@@ -513,7 +513,7 @@ module Sablon
       end
 
       def inspect
-        "<Newline>"
+        '<Newline>'
       end
 
       private

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Sablon
   module Parser
     class MailMerge
@@ -14,7 +16,7 @@ module Sablon
         end
 
         def expression
-          $1 if @raw_expression =~ KEY_PATTERN
+          ::Regexp.last_match(1) if @raw_expression =~ KEY_PATTERN
         end
 
         private
@@ -37,7 +39,7 @@ module Sablon
         end
 
         def get_display_node(node)
-          node.search(".//w:t").first
+          node.search('.//w:t').first
         end
       end
 
@@ -45,7 +47,7 @@ module Sablon
         def initialize(nodes)
           super()
           @nodes = nodes
-          @raw_expression = @nodes.flat_map {|n| n.search(".//w:instrText").map(&:content) }.join
+          @raw_expression = @nodes.flat_map { |n| n.search('.//w:instrText').map(&:content) }.join
         end
 
         def valid?
@@ -86,7 +88,7 @@ module Sablon
         end
 
         def separate_node
-          @nodes.detect {|n| !n.search(".//w:fldChar[@w:fldCharType='separate']").empty? }
+          @nodes.detect { |n| !n.search(".//w:fldChar[@w:fldCharType='separate']").empty? }
         end
       end
 
@@ -94,7 +96,7 @@ module Sablon
         def initialize(node)
           super()
           @node = node
-          @raw_expression = @node["w:instr"]
+          @raw_expression = @node['w:instr']
         end
 
         def replace(content, env)
@@ -120,24 +122,24 @@ module Sablon
         def start_node
           @node
         end
-        alias_method :end_node, :start_node
+        alias end_node start_node
 
         private
 
         def remove_extra_runs!
-          @node.search(".//w:r")[1..-1].each(&:remove)
+          @node.search('.//w:r')[1..].each(&:remove)
         end
       end
 
       def parse_fields(xml)
         fields = []
         xml.traverse do |node|
-          if node.name == "fldSimple"
+          if node.name == 'fldSimple'
             field = SimpleField.new(node)
-          elsif node.name == "fldChar" && node["w:fldCharType"] == "begin"
+          elsif node.name == 'fldChar' && node['w:fldCharType'] == 'begin'
             field = build_complex_field(node)
           end
-          fields << field if field && field.valid?
+          fields << field if field&.valid?
         end
         fields
       end

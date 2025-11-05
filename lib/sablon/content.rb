@@ -8,20 +8,19 @@ module Sablon
         when Sablon::Content
           value
         else
-          if type = type_wrapping(value)
-            type.new(value)
-          else
+          unless (type = type_wrapping(value))
             raise ArgumentError, "Could not find Sablon content type to wrap #{value.inspect}"
           end
+
+          type.new(value)
+
         end
       end
 
       def make(type_id, *args)
-        if types.key?(type_id)
-          types[type_id].new(*args)
-        else
-          raise ArgumentError, "Could not find Sablon content type with id '#{type_id}'"
-        end
+        raise ArgumentError, "Could not find Sablon content type with id '#{type_id}'" unless types.key?(type_id)
+
+        types[type_id].new(*args)
       end
 
       def register(content_type)
@@ -29,10 +28,11 @@ module Sablon
       end
 
       def remove(content_type_or_id)
-        types.delete_if {|k,v| k == content_type_or_id || v == content_type_or_id }
+        types.delete_if { |k, v| k == content_type_or_id || v == content_type_or_id }
       end
 
       private
+
       def type_wrapping(value)
         types.values.reverse.detect { |type| type.wraps?(value) }
       end
@@ -45,7 +45,10 @@ module Sablon
     # Handles simple text replacement of fields in the template
     class String < Struct.new(:string)
       include Sablon::Content
-      def self.id; :string end
+      def self.id
+        :string
+      end
+
       def self.wraps?(value)
         value.respond_to?(:to_s)
       end
@@ -57,7 +60,7 @@ module Sablon
       def append_to(paragraph, display_node, env)
         string.scan(/[^\n]+|\n/).reverse.each do |part|
           if part == "\n"
-            display_node.add_next_sibling Nokogiri::XML::Node.new "w:br", display_node.document
+            display_node.add_next_sibling Nokogiri::XML::Node.new 'w:br', display_node.document
           else
             text_part = display_node.dup
             text_part.content = part
@@ -71,7 +74,7 @@ module Sablon
     class WordML < Struct.new(:xml)
       include Sablon::Content
       def self.id; :word_ml end
-      def self.wraps?(value) false end
+      def self.wraps?(value); false end
 
       def initialize(value)
         super Nokogiri::XML.fragment(value)
@@ -163,8 +166,13 @@ module Sablon
     # Handles conversion of HTML -> WordML and addition into template
     class HTML < Struct.new(:html_content)
       include Sablon::Content
-      def self.id; :html end
-      def self.wraps?(value) false end
+      def self.id
+        :html
+      end
+
+      def self.wraps?(_value)
+        false
+      end
 
       def initialize(value)
         super value
