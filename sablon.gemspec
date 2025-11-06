@@ -25,7 +25,7 @@ Gem::Specification.new do |spec|
   spec.metadata['rubygems_mfa_required'] = 'true'
 
   spec.add_runtime_dependency 'nokogiri', '>= 1.10.0'
-  spec.add_runtime_dependency 'rubyzip', ">= 1.3.0"
+  spec.add_runtime_dependency 'rubyzip', ">= 1.3.0", "< 3.0.0"
 
   spec.add_development_dependency "bundler", ">= 1.6"
   spec.add_development_dependency "rake", "~> 13.0"
