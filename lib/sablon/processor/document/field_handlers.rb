@@ -88,6 +88,21 @@ module Sablon
         end
       end
 
+      class ExpressiveConditionalHandler < FieldHandler
+        def initialize
+          super(/([^ ]+):if\s*(==|!=|<=|>=|<|>)\s*(['"].+?['"]|[\w.]+)$/)
+        end
+
+        def build_statement(constructor, field, _options = {})
+          left_operand, operator, right_operand = field.expression.match(@pattern).to_a[1..3]
+          block = constructor.consume_block("#{left_operand}:endIf")
+
+          Statement::ExpressiveCondition.new(
+            left_operand, operator, right_operand, block
+          )
+        end
+      end
+
       # Handles image insertion fields
       class ImageHandler < FieldHandler
         def initialize

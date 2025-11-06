@@ -1,21 +1,20 @@
 #!/usr/bin/env ruby
-# frozen_string_literal: true
 
 require 'sablon'
 require 'json'
 
-if ARGV.empty?
-  puts <<~HELP
-    cat <context path> | sablon <template path> [<output path>]
+if ARGV.size < 1
+  puts <<-HELP
+cat <context path> | sablon <template path> [<output path>]
   HELP
   exit
 end
 
 template_path = File.expand_path(ARGV[0])
-context_json = $stdin.readlines.join
+context_json = STDIN.readlines.join
 context = JSON.parse(context_json)
-config = context.delete('_sablon') || {}
-section_properties = config.fetch('properties', {})
+config = context.delete("_sablon") || {}
+section_properties = config.fetch("properties", {})
 
 template = Sablon.template(template_path)
 

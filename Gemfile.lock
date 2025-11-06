@@ -8,13 +8,13 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    nokogiri (1.18.8-arm64-darwin)
+    minitest (5.25.5)
+    nokogiri (1.15.7-arm64-darwin)
       racc (~> 1.4)
     ostruct (0.6.0)
     racc (1.8.1)
     rake (13.1.0)
     rexml (3.4.1)
-    minitest (5.25.5)
     rubyzip (2.4.1)
     xml-simple (1.1.9)
       rexml
@@ -31,4 +31,4 @@ DEPENDENCIES
   xml-simple
 
 BUNDLED WITH
-   2.4.15
+   2.4.19

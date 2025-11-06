@@ -101,6 +101,7 @@ module Sablon
       # register "builtin" handlers
       register_field_handler :insertion, InsertionHandler.new
       register_field_handler :each_loop, EachLoopHandler.new
+      register_field_handler :expressive_conditional, ExpressiveConditionalHandler.new
       register_field_handler :conditional, ConditionalHandler.new
       register_field_handler :image, ImageHandler.new
       register_field_handler :comment, CommentHandler.new

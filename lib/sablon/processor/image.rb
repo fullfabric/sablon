@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # The code of that class was inspired in "kubido Fork - https://github.com/kubido/"
 
 module Sablon

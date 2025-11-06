@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 require 'sablon/html/ast'
 require 'sablon/html/visitor'
 
