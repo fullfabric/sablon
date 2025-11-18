@@ -130,7 +130,7 @@ module Sablon
 
       # Returns `true` if all of the xml nodes to be inserted are
       def all_inline?
-        (current_fragment.children.map(&:node_name) - inline_tags).empty?
+        (xml.children.map(&:node_name) - inline_tags).empty?
       end
 
       # Array of tags allowed to be a child of the w:p XML tag as defined
