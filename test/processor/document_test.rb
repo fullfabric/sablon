@@ -824,6 +824,21 @@ class ProcessorDocumentTest < Sablon::TestCase
     assert_empty observer.named(:block)
   end
 
+  def test_observer_sees_block_for_an_inline_condition_that_holds
+    observer = RecordingObserver.new
+    process(snippet('conditional_inline'), { 'middle_name' => true }, observer)
+
+    assert_equal 1, observer.named(:block).size
+    assert_kind_of Sablon::Processor::Document::InlineParagraphBlock, observer.named(:block).first[1]
+  end
+
+  def test_observer_sees_no_block_for_an_inline_condition_that_does_not_hold
+    observer = RecordingObserver.new
+    process(snippet('conditional_inline'), { 'middle_name' => false }, observer)
+
+    assert_empty observer.named(:block)
+  end
+
   def test_observer_sees_image
     base_path = Pathname.new(File.expand_path('../../', __FILE__))
     image = Sablon.content(:image, base_path + 'fixtures/images/r2d2.jpg')
