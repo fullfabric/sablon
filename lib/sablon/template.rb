@@ -38,14 +38,14 @@ module Sablon
     end
 
     # Same as +render_to_string+ but writes the processed template to +output_path+.
-    def render_to_file(output_path, context, properties = {}, observer: nil)
+    def render_to_file(output_path, context, properties = {}, observer = nil)
       File.open(output_path, 'wb') do |f|
-        f.write render_to_string(context, properties, observer: observer)
+        f.write render_to_string(context, properties, observer)
       end
     end
 
     # Process the template. The +context+ hash will be available in the template.
-    def render_to_string(context, properties = {}, observer: nil)
+    def render_to_string(context, properties = {}, observer = nil)
       render(context, properties, observer).string
     end
 

@@ -137,7 +137,7 @@ class SablonObserverTest < Sablon::TestCase
       render.call
     end
 
-    template.render_to_file @output_path, context, {}, observer: observer
+    template.render_to_file @output_path, context, {}, observer
 
     assert_docx_equal @sample_path, @output_path
     assert_includes inserted, 'Apple'
