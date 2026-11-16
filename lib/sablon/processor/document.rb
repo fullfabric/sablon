@@ -72,7 +72,7 @@ module Sablon
       def manipulate(xml_node, env)
         operations = build_operations(@parser.parse_fields(xml_node))
         operations.each do |step|
-          step.evaluate env
+          env.observe(:statement, step) { step.evaluate env }
         end
         cleanup(xml_node)
         xml_node

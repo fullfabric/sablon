@@ -114,6 +114,37 @@ class SablonConditionalsTest < Sablon::TestCase
   end
 end
 
+class SablonObserverTest < Sablon::TestCase
+  include XMLSnippets
+
+  def setup
+    super
+    @base_path = Pathname.new(File.expand_path("../", __FILE__))
+    @template_path = @base_path + "fixtures/loops_template.docx"
+    @output_path = @base_path + "sandbox/loops_observed.docx"
+    @sample_path = @base_path + "fixtures/loops_sample.docx"
+  end
+
+  def test_render_reports_to_the_observer_without_changing_the_document
+    template = Sablon.template @template_path
+    context = {
+      fruits: %w[Apple Blueberry Cranberry Date].map { |i| { name: i } },
+      cars: %w[Silverado Serria Ram Tundra].map { |i| { name: i } }
+    }
+    inserted = []
+    observer = lambda do |event, *subjects, &render|
+      inserted << subjects.last if event == :insertion
+      render.call
+    end
+
+    template.render_to_file @output_path, context, {}, observer: observer
+
+    assert_docx_equal @sample_path, @output_path
+    assert_includes inserted, 'Apple'
+    assert_includes inserted, 'Tundra'
+  end
+end
+
 class SablonLoopsTest < Sablon::TestCase
   include XMLSnippets
 

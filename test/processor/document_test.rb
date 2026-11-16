@@ -755,10 +755,108 @@ class ProcessorDocumentTest < Sablon::TestCase
     document
   end
 
+  class RecordingObserver
+    attr_reader :events
+
+    def initialize
+      @events = []
+    end
+
+    def call(event, *subjects)
+      result = yield
+      @events << [event, *subjects]
+      result
+    rescue StandardError => e
+      @events << [event, *subjects, e]
+      raise
+    end
+
+    def named(event)
+      @events.select { |e| e.first == event }
+    end
+  end
+
+  def test_observer_sees_a_statement_per_operation
+    observer = RecordingObserver.new
+    process(snippet('simple_field'), { 'first_name' => 'Jane' }, observer)
+
+    assert_equal 1, observer.named(:statement).size
+    assert_kind_of Sablon::Statement::Insertion, observer.named(:statement).first[1]
+  end
+
+  def test_observer_sees_insertion_with_field_and_raw_value
+    observer = RecordingObserver.new
+    process(snippet('simple_field'), { 'first_name' => 'Jane' }, observer)
+
+    _event, field, content = observer.named(:insertion).first
+    assert_equal '=first_name', field.expression
+    assert_equal 'Jane', content
+  end
+
+  def test_observer_sees_insertion_of_missing_value_as_nil
+    observer = RecordingObserver.new
+    process(snippet('simple_field'), {}, observer)
+
+    assert_equal [nil], observer.named(:insertion).map(&:last)
+  end
+
+  def test_observer_sees_loop_items_and_block
+    observer = RecordingObserver.new
+    process(snippet('paragraph_loop'), { 'technologies' => %w[CSS SCSS LESS] }, observer)
+
+    assert_equal %w[CSS SCSS LESS], observer.named(:insertion).map(&:last)
+    assert_equal 3, observer.named(:block).size
+    assert(observer.named(:block).all? { |_e, block| block.is_a?(Sablon::Processor::Document::Block) })
+  end
+
+  def test_observer_sees_block_for_a_condition_that_holds
+    observer = RecordingObserver.new
+    process(snippet('conditional'), { 'middle_name' => 'Michael' }, observer)
+
+    assert_equal 1, observer.named(:block).size
+    assert_equal ['Michael'], observer.named(:insertion).map(&:last)
+  end
+
+  def test_observer_sees_no_block_for_a_condition_that_does_not_hold
+    observer = RecordingObserver.new
+    process(snippet('conditional'), { 'middle_name' => nil }, observer)
+
+    assert_empty observer.named(:block)
+  end
+
+  def test_observer_sees_image
+    base_path = Pathname.new(File.expand_path('../../', __FILE__))
+    image = Sablon.content(:image, base_path + 'fixtures/images/r2d2.jpg')
+    observer = RecordingObserver.new
+    process(snippet('image'), { 'item' => { 'image' => image } }, observer)
+
+    _event, block, observed_image = observer.named(:image).first
+    assert_kind_of Sablon::Processor::Document::ImageBlock, block
+    assert_same image, observed_image
+  end
+
+  def test_observer_sees_the_exception_raised_by_a_statement
+    observer = RecordingObserver.new
+
+    assert_raises Sablon::ContextError do
+      process(snippet('paragraph_loop'), { 'technologies' => 'string' }, observer)
+    end
+
+    _event, _statement, error = observer.named(:statement).first
+    assert_kind_of Sablon::ContextError, error
+  end
+
+  def test_output_is_identical_with_and_without_observer
+    context = { 'technologies' => %w[CSS SCSS LESS] }
+
+    assert_equal process(snippet('paragraph_loop'), context),
+                 process(snippet('paragraph_loop'), context, RecordingObserver.new)
+  end
+
   private
 
-  def process(document, context)
-    env = Sablon::Environment.new(MockTemplate.new, context)
+  def process(document, context, observer = nil)
+    env = Sablon::Environment.new(MockTemplate.new, context, observer)
     env.document.current_entry = 'word/document.xml'
     @processor.process(wrap(document), env).to_xml
   end

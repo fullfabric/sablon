@@ -6,10 +6,13 @@ module Sablon
 
     Insertion = Struct.new(:expr, :field) do
       def evaluate(env)
-        if content = expr.evaluate(env.context)
-          field.replace(Sablon::Content.wrap(content), env)
-        else
-          field.remove
+        content = expr.evaluate(env.context)
+        env.observe(:insertion, field, content) do
+          if content
+            field.replace(Sablon::Content.wrap(content), env)
+          else
+            field.remove
+          end
         end
       end
     end
@@ -186,7 +189,7 @@ module Sablon
       def evaluate(env)
         image = image_reference.evaluate(env.context)
         set_local_rid(env, image) if image
-        block.replace(image)
+        env.observe(:image, block, image) { block.replace(image) }
       end
 
       private

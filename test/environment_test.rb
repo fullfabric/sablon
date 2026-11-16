@@ -26,4 +26,46 @@ class EnvironmentTest < Sablon::TestCase
     # check that a new context reference was created
     assert !env.context.equal?(env2.context), "#{env.context} == #{env2.context}"
   end
+
+  def test_alter_context_keeps_the_observer
+    observer = ->(_event, *_subjects, &block) { block.call }
+    env = Sablon::Environment.new(nil, { a: 1 }, observer)
+
+    assert_same observer, env.observer
+    assert_same observer, env.alter_context(a: 2).observer
+  end
+
+  def test_observer_is_nil_by_default
+    assert_nil Sablon::Environment.new(nil, a: 1).observer
+  end
+
+  def test_observe_without_observer_yields_and_returns_the_block_value
+    env = Sablon::Environment.new(nil, a: 1)
+    calls = 0
+
+    result = env.observe(:statement, :subject) do
+      calls += 1
+      :done
+    end
+
+    assert_equal :done, result
+    assert_equal 1, calls
+  end
+
+  def test_observe_with_observer_delegates_and_returns_the_observer_result
+    seen = []
+    observer = lambda do |event, *subjects, &block|
+      seen << [event, subjects]
+      block.call
+      :from_observer
+    end
+    env = Sablon::Environment.new(nil, { a: 1 }, observer)
+    calls = 0
+
+    result = env.observe(:insertion, :field, 'raw') { calls += 1 }
+
+    assert_equal :from_observer, result
+    assert_equal 1, calls
+    assert_equal [[:insertion, [:field, 'raw']]], seen
+  end
 end
