@@ -1,0 +1,30 @@
+<w:p>
+  <w:fldSimple w:instr=" MERGEFIELD middle_name:if(itself) \* MERGEFORMAT ">
+    <w:r>
+      <w:rPr><w:noProof/></w:rPr>
+      <w:t>middle_name:if(itself)»</w:t>
+    </w:r>
+  </w:fldSimple>
+</w:p>
+<w:p>
+  <w:t>Has middle name</w:t>
+</w:p>
+<w:p>
+  <w:fldSimple w:instr=" MERGEFIELD middle_name:elsif(empty?) \* MERGEFORMAT ">
+    <w:r>
+      <w:rPr><w:noProof/></w:rPr>
+      <w:t>middle_name:elsif(empty?)»</w:t>
+    </w:r>
+  </w:fldSimple>
+</w:p>
+<w:p>
+  <w:t>Middle name is empty</w:t>
+</w:p>
+<w:p>
+  <w:fldSimple w:instr=" MERGEFIELD middle_name:endIf \* MERGEFORMAT ">
+    <w:r>
+      <w:rPr><w:noProof/></w:rPr>
+      <w:t>middle_name:endIf»</w:t>
+    </w:r>
+  </w:fldSimple>
+</w:p>

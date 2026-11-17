@@ -103,8 +103,10 @@ module Sablon
           block = condition[:block]
           #
           # fetch value optionally calling a predicate method
-          value = conditon_expr.evaluate(env.context)
-          value = value.public_send(predicate) if predicate
+          value = env.observe(:predicate, block) do
+            result = conditon_expr.evaluate(env.context)
+            predicate ? result.public_send(predicate) : result
+          end
           #
           if truthy?(value)
             block.replace(block.process(env).reverse)

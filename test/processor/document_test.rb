@@ -839,6 +839,36 @@ class ProcessorDocumentTest < Sablon::TestCase
     assert_empty observer.named(:block)
   end
 
+  def test_observer_sees_a_predicate_per_evaluated_condition
+    observer = RecordingObserver.new
+    object = OpenStruct.new(method_a: false, method_b: true, method_c: true)
+    process(snippet('conditional_with_two_elsif_clauses'), { 'object' => object }, observer)
+
+    expressions = observer.named(:predicate).map { |_event, block| block.start_field.expression }
+    assert_equal ['object:if(method_a)', 'object:elsif(method_b)'], expressions
+  end
+
+  def test_observer_sees_no_predicate_for_the_else_block
+    observer = RecordingObserver.new
+    object = OpenStruct.new(method_a: false, method_b: false, method_c: false)
+    process(snippet('conditional_with_two_elsif_clauses'), { 'object' => object }, observer)
+
+    expressions = observer.named(:predicate).map { |_event, block| block.start_field.expression }
+    assert_equal ['object:if(method_a)', 'object:elsif(method_b)', 'object:elsif(method_c)'], expressions
+  end
+
+  def test_observer_sees_the_elsif_block_whose_predicate_raises
+    observer = RecordingObserver.new
+
+    assert_raises NoMethodError do
+      process(snippet('conditional_with_failing_elsif_predicate'), { 'middle_name' => nil }, observer)
+    end
+
+    _event, block, error = observer.named(:predicate).last
+    assert_equal 'middle_name:elsif(empty?)', block.start_field.expression
+    assert_kind_of NoMethodError, error
+  end
+
   def test_observer_sees_image
     base_path = Pathname.new(File.expand_path('../../', __FILE__))
     image = Sablon.content(:image, base_path + 'fixtures/images/r2d2.jpg')
