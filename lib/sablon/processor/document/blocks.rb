@@ -32,10 +32,12 @@ module Sablon
         end
 
         def process(env)
-          replaced_node = Nokogiri::XML::Node.new("tmp", start_node.document)
-          replaced_node.children = Nokogiri::XML::NodeSet.new(start_node.document, body.map(&:dup))
-          Processor::Document.process replaced_node, env
-          replaced_node.children
+          env.observe(:block, self) do
+            replaced_node = Nokogiri::XML::Node.new("tmp", start_node.document)
+            replaced_node.children = Nokogiri::XML::NodeSet.new(start_node.document, body.map(&:dup))
+            Processor::Document.process replaced_node, env
+            replaced_node.children
+          end
         end
 
         def replace(content)
@@ -131,24 +133,26 @@ module Sablon
         end
 
         def process(env)
-          # Create a mock document structure so xpath queries will work
-          # correctly on block level content (i.e. searching for the first
-          # ancestor paragraph)
-          doc_node = Nokogiri::XML::Node.new('document', start_node.document)
-          doc_node.namespace = start_node.parent.namespace
-          p_node = Nokogiri::XML::Node.new('p', doc_node.document)
-          p_node.namespace = start_node.parent.namespace
-          p_node.children = Nokogiri::XML::NodeSet.new(p_node.document,
-                                                       body.map(&:dup))
-          doc_node.children = Nokogiri::XML::NodeSet.new(p_node.document,
-                                                         [p_node])
-          Processor::Document.process doc_node, env
+          env.observe(:block, self) do
+            # Create a mock document structure so xpath queries will work
+            # correctly on block level content (i.e. searching for the first
+            # ancestor paragraph)
+            doc_node = Nokogiri::XML::Node.new('document', start_node.document)
+            doc_node.namespace = start_node.parent.namespace
+            p_node = Nokogiri::XML::Node.new('p', doc_node.document)
+            p_node.namespace = start_node.parent.namespace
+            p_node.children = Nokogiri::XML::NodeSet.new(p_node.document,
+                                                         body.map(&:dup))
+            doc_node.children = Nokogiri::XML::NodeSet.new(p_node.document,
+                                                           [p_node])
+            Processor::Document.process doc_node, env
 
-          if p_node.parent.nil?
-            replace_parent_node(doc_node.children)
-            []
-          else
-            p_node.children
+            if p_node.parent.nil?
+              replace_parent_node(doc_node.children)
+              []
+            else
+              p_node.children
+            end
           end
         end
 

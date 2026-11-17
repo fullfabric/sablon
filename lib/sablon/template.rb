@@ -38,23 +38,23 @@ module Sablon
     end
 
     # Same as +render_to_string+ but writes the processed template to +output_path+.
-    def render_to_file(output_path, context, properties = {})
+    def render_to_file(output_path, context, properties = {}, observer = nil)
       File.open(output_path, 'wb') do |f|
-        f.write render_to_string(context, properties)
+        f.write render_to_string(context, properties, observer)
       end
     end
 
     # Process the template. The +context+ hash will be available in the template.
-    def render_to_string(context, properties = {})
-      render(context, properties).string
+    def render_to_string(context, properties = {}, observer = nil)
+      render(context, properties, observer).string
     end
 
     private
 
-    def render(context, properties = {})
+    def render(context, properties = {}, observer = nil)
       # initialize environment
       @document = Sablon::DOM::Model.new(Zip::File.open(@path, !File.exist?(@path)))
-      env = Sablon::Environment.new(self, context)
+      env = Sablon::Environment.new(self, context, observer)
       env.section_properties = properties
       #
       # process files
