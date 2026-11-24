@@ -2,13 +2,41 @@
 
 require 'test_helper'
 require 'support/document_xml_helper'
+require 'support/xml_snippets'
 
 class ProcessorBlockTest < Sablon::TestCase
   include DocumentXMLHelper
+  include XMLSnippets
 
   Block = Sablon::Processor::Document::Block
   RowBlock = Sablon::Processor::Document::RowBlock
 
+  # Nokogiri answers ancestors(selector) by searching the whole tree from its root, so a render that calls it for
+  # each field or block grows with the size of the part squared. Raises on such a call while a block runs.
+  module SelectorAncestorsForbidden
+    def ancestors(selector = nil)
+      raise "ancestors(#{selector}) searches the whole tree" if selector && Thread.current[:selector_ancestors_forbidden]
+
+      super
+    end
+  end
+  Nokogiri::XML::Node.prepend(SelectorAncestorsForbidden)
+
+  def test_rendering_finds_paragraphs_and_rows_without_searching_the_tree
+    item = Struct.new(:index, :label, :rating)
+    renders = {
+      'simple_fields' => { 'first_name' => 'Jack', 'last_name' => 'Davis' },
+      'complex_field' => { 'last_name' => 'Zane' },
+      'paragraph_loop' => { 'technologies' => %w[Ruby Rails] },
+      'table_row_loop' => { 'items' => [item.new('1.', 'Milk', '***')] },
+      'conditional_inline' => { 'middle_name' => true },
+      'complex_field_inline_conditional' => { 'boolean' => false }
+    }
+
+    renders.each do |name, context|
+      forbidding_selector_ancestors { process(snippet(name), context) }
+    end
+  end
   def test_parent_is_the_nearest_paragraph
     doc = wrap(<<-XML)
       <w:tbl><w:tr><w:tc>
@@ -64,6 +92,19 @@ class ProcessorBlockTest < Sablon::TestCase
   end
 
   private
+
+  def forbidding_selector_ancestors
+    Thread.current[:selector_ancestors_forbidden] = true
+    yield
+  ensure
+    Thread.current[:selector_ancestors_forbidden] = nil
+  end
+
+  def process(document, context)
+    env = Sablon::Environment.new(MockTemplate.new, context)
+    env.document.current_entry = 'word/document.xml'
+    Sablon::Processor::Document.process(wrap(document), env)
+  end
 
   def node(doc, id)
     doc.at_xpath("//*[@id='#{id}']")

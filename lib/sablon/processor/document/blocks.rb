@@ -14,16 +14,8 @@ module Sablon
           parent(start_field) && parent(end_field)
         end
 
-        # The nearest ancestor the selector names. Walking up keeps this as deep as the node: ancestors(selector)
-        # searches the whole tree on every call, so building the blocks of a part grew with its size squared.
         def self.parent(node)
-          prefix, name = parent_selector.sub('.//', '').split(':')
-          ancestors = node.ancestors
-          root = ancestors.document.root
-          namespace = root && root.namespaces["xmlns:#{prefix}"]
-          ancestors.find do |ancestor|
-            ancestor.element? && ancestor.name == name && ancestor.namespace && ancestor.namespace.href == namespace
-          end
+          Sablon::DOM.nearest_ancestor(node, parent_selector)
         end
 
         def self.parent_selector
@@ -183,7 +175,7 @@ module Sablon
         # A block level insertion has occurred which must replace the
         # parent paragraph of the start node.
         def replace_parent_node(content)
-          node = start_node.ancestors('.//w:p').first
+          node = Sablon::DOM.nearest_ancestor(start_node, './/w:p')
           content.each { |n| node.add_next_sibling n }
           node.remove
         end
