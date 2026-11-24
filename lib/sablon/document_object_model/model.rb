@@ -28,14 +28,15 @@ module Sablon
 
       # The nearest ancestor of a node, or of a merge field, that a selector such as './/w:p' names. Walking up
       # keeps this as deep as the node: ancestors(selector) searches the whole tree from its root on every call,
-      # so a pass over a part grew with its size squared. The prefix resolves through the document, as the
-      # selector did.
+      # so a pass over a part grew with its size squared. It answers as that search did: the prefix resolves
+      # through the document, and the topmost ancestor is left out, as the search looked only below it, so a
+      # paragraph taken out of the document is not found from inside it.
       def nearest_ancestor(node, selector)
         prefix, name = selector.sub('.//', '').split(':')
         ancestors = node.ancestors
         root = ancestors.document.root
         namespace = root && root.namespaces["xmlns:#{prefix}"]
-        ancestors.find do |ancestor|
+        ancestors[0...-1].find do |ancestor|
           ancestor.element? && ancestor.name == name && ancestor.namespace && ancestor.namespace.href == namespace
         end
       end

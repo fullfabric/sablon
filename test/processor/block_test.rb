@@ -76,6 +76,13 @@ class ProcessorBlockTest < Sablon::TestCase
     assert_equal 'outer', Block.parent(node(doc, 'text'))['id']
   end
 
+  def test_parent_inside_a_paragraph_taken_out_of_the_document_is_nil
+    doc = wrap('<w:p id="taken"><w:r><w:t id="text">x</w:t></w:r></w:p>')
+    paragraph = node(doc, 'taken').unlink
+
+    assert_nil Block.parent(paragraph.at_xpath(".//*[@id='text']"))
+  end
+
   def test_parent_of_a_node_outside_any_paragraph_is_nil
     doc = wrap('<w:sectPr id="section"/>')
 
