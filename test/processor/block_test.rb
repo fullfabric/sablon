@@ -37,6 +37,16 @@ class ProcessorBlockTest < Sablon::TestCase
       forbidding_selector_ancestors { process(snippet(name), context) }
     end
   end
+
+  def test_block_content_in_an_inline_block_replaces_its_paragraph_without_searching_the_tree
+    field = ->(expression) { %(<w:fldSimple w:instr=" MERGEFIELD #{expression} \\* MERGEFORMAT "><w:r><w:t>x</w:t></w:r></w:fldSimple>) }
+    document = "<w:p>#{field.call('flag:if')}#{field.call('=content')}#{field.call('flag:endIf')}</w:p>"
+    context = { 'flag' => true, 'content' => Sablon.content(:word_ml, '<w:p><w:r><w:t>block</w:t></w:r></w:p>') }
+
+    result = forbidding_selector_ancestors { process(document, context) }
+
+    assert_equal ['block'], result.xpath('.//w:p').map(&:text)
+  end
   def test_parent_is_the_nearest_paragraph
     doc = wrap(<<-XML)
       <w:tbl><w:tr><w:tc>
@@ -81,6 +91,16 @@ class ProcessorBlockTest < Sablon::TestCase
     paragraph = node(doc, 'taken').unlink
 
     assert_nil Block.parent(paragraph.at_xpath(".//*[@id='text']"))
+  end
+
+  def test_parent_raises_when_the_document_root_does_not_declare_the_prefix
+    doc = Nokogiri::XML(<<-XML)
+      <document><w:body xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+        <w:p><w:r><w:t id="text">x</w:t></w:r></w:p>
+      </w:body></document>
+    XML
+
+    assert_raises(Nokogiri::XML::XPath::SyntaxError) { Block.parent(node(doc, 'text')) }
   end
 
   def test_parent_of_a_node_outside_any_paragraph_is_nil
