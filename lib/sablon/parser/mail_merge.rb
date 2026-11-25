@@ -30,7 +30,7 @@ module Sablon
         end
 
         def replace_field_display(node, content, env)
-          paragraph = node.ancestors(".//w:p").first
+          paragraph = Sablon::DOM.nearest_ancestor(node, ".//w:p")
           display_node = get_display_node(node)
           content.append_to(paragraph, display_node, env)
           display_node.remove
@@ -64,7 +64,7 @@ module Sablon
 
         def remove_parent(selector)
           node = @nodes.first
-          remove_or_decrement_ref(node.ancestors(selector).first)
+          remove_or_decrement_ref(Sablon::DOM.nearest_ancestor(node, selector))
         end
 
         def ancestors(*args)
@@ -110,7 +110,7 @@ module Sablon
 
         # removes the parent node containing the merge field
         def remove_parent(selector)
-          remove_or_decrement_ref(@node.ancestors(selector).first)
+          remove_or_decrement_ref(Sablon::DOM.nearest_ancestor(@node, selector))
         end
 
         def ancestors(*args)

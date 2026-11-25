@@ -15,7 +15,7 @@ module Sablon
         end
 
         def self.parent(node)
-          node.ancestors(parent_selector).first
+          Sablon::DOM.nearest_ancestor(node, parent_selector)
         end
 
         def self.parent_selector
@@ -175,7 +175,7 @@ module Sablon
         # A block level insertion has occurred which must replace the
         # parent paragraph of the start node.
         def replace_parent_node(content)
-          node = start_node.ancestors('.//w:p').first
+          node = Sablon::DOM.nearest_ancestor(start_node, './/w:p')
           content.each { |n| node.add_next_sibling n }
           node.remove
         end
